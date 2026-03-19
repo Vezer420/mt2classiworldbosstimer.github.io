@@ -366,16 +366,19 @@ function addMarker(viewer, point, mapId){
 
     marker.classList.add("openseadragon-no-pan");
 
-    const markerData = {
-        map: mapId,
-        type: type,
-        x: point.x,
-        y: point.y,
-        data: marker.data,
-        channels: marker.channels
-    };
+    await fb.addDoc(
+        fb.collection(db, "markers"),
+        {
+            map: mapId,
+            type: type,
+            x: point.x,
+            y: point.y,
+            data: marker.data,
+            channels: marker.channels
+        }
+    );
 
-    markers.push(markerData);
+    //markers.push(markerData);
 
     // link ONLY in memory (not saved)
     marker._data = markerData;
@@ -570,67 +573,76 @@ function exportMarkers(){
 
     URL.revokeObjectURL(url);
 }
-async function loadMarkers(viewers){
+function listenMarkers(viewers){
 
-    const res = await fetch("markers.json");
-    const data = await res.json();
+    fb.onSnapshot(fb.collection(db, "markers"), snapshot => {
 
-    data.forEach(m => {
-
-        const viewer = viewers[m.map];
-
-        const marker = createMarkerElement(m.type);
-
-        marker.data = m.data || {
-            name: "",
-            resist: "",
-            location: ""
-        };
-
-        marker.channels = m.channels || {
-            1: { endTime: null },
-            2: { endTime: null },
-            3: { endTime: null },
-            4: { endTime: null }
-        };
-
-        viewer.addOverlay({
-            element: marker,
-            location: new OpenSeadragon.Point(m.x, m.y),
-            placement: OpenSeadragon.Placement.CENTER
+        // clear existing markers
+        markers.forEach(m => {
+            if(m._element){
+                m._element.remove();
+            }
         });
 
-        new OpenSeadragon.MouseTracker({
-        element: marker,
+        markers = [];
 
-        clickHandler: function(event){
-            event.preventDefaultAction = true;
+        snapshot.forEach(docSnap => {
 
-            if (event.originalEvent.button === 0) {
-                marker.cooldown = 7200;
-                marker.startCooldown();
-            }
-        },
+            const m = docSnap.data();
+            m.id = docSnap.id;
 
-        contextMenuHandler: function(event){
-            event.preventDefaultAction = true;
+            const viewer = viewers[m.map];
 
-            openMarkerPopup(
-                viewer,
-                new OpenSeadragon.Point(m.x,m.y),
-                m.type,
-                marker
-            );
-        }
+            const marker = createMarkerElement(m.type);
 
-    }).setTracking(true);
-    m._element = marker;
-    marker._data = m;
+            marker.data = m.data || {};
+            marker.channels = m.channels || {
+                1:{},2:{},3:{},4:{}
+            };
 
-    markers.push(m);
+            viewer.addOverlay({
+                element: marker,
+                location: new OpenSeadragon.Point(m.x, m.y),
+                placement: OpenSeadragon.Placement.CENTER
+            });
 
+            new OpenSeadragon.MouseTracker({
+                element: marker,
+
+                clickHandler: function(event){
+                    event.preventDefaultAction = true;
+
+                    if(event.originalEvent.button === 0){
+                        marker.cooldown = 7200;
+                        marker.startCooldown();
+
+                        // 🔄 sync update
+                        fb.updateDoc(
+                            fb.doc(db, "markers", m.id),
+                            { channels: marker.channels }
+                        );
+                    }
+                },
+
+                contextMenuHandler: function(event){
+                    event.preventDefaultAction = true;
+
+                    openMarkerPopup(
+                        viewer,
+                        new OpenSeadragon.Point(m.x,m.y),
+                        m.type,
+                        marker
+                    );
+                }
+
+            }).setTracking(true);
+
+            m._element = marker;
+            marker._data = m;
+
+            markers.push(m);
+        });
     });
-
 }
 
 const viewers = {
@@ -640,5 +652,5 @@ const viewers = {
     viewer4: createViewer("viewer4","map4.png",0.45)
 };
 
-loadMarkers(viewers);
+listenMarkers(viewers);
 updateChannelUI();
