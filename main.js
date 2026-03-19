@@ -94,7 +94,7 @@ function setChannel(ch){
     // force immediate visual refresh
     markers.forEach(m => {
 
-        const marker = m.element;
+        const marker = m._element; 
         if(!marker) return;
 
         const progress = marker.querySelector(".cooldown-progress");
@@ -358,7 +358,7 @@ async function addMarker(viewer, point, mapId){
     // store element separately (NOT in JSON)
     
 
-    }
+    
 
 function stopOSDKeys(element){
     ["keydown", "keypress", "keyup"].forEach(evt => {
@@ -515,6 +515,10 @@ function openMarkerPopup(viewer, point, type, marker){
     });
 
     deleteBtn.addEventListener("click", async () => {
+
+        await fb.deleteDoc(
+            fb.doc(db, "markers", marker._data.id)
+        );
         viewer.removeOverlay(popup);
         activePopup = null;
         activePopupViewer = null;
@@ -557,7 +561,7 @@ function listenMarkers(viewers){
         // clear existing markers
         markers.forEach(m => {
             if(m._element){
-                m._element.remove();
+                viewer.removeOverlay(m._element);
             }
         });
 
@@ -571,6 +575,9 @@ function listenMarkers(viewers){
             const viewer = viewers[m.map];
 
             const marker = createMarkerElement(m.type);
+
+            marker.classList.add("openseadragon-no-pan");
+            marker.style.pointerEvents = "auto";
 
             marker.data = m.data || {};
             marker.channels = m.channels || {
@@ -586,7 +593,7 @@ function listenMarkers(viewers){
             new OpenSeadragon.MouseTracker({
                 element: marker,
 
-                clickHandler: function(event){
+                clickHandler: async function(event){
                     event.preventDefaultAction = true;
 
                     if(event.originalEvent.button === 0){
@@ -594,7 +601,7 @@ function listenMarkers(viewers){
                         marker.startCooldown();
 
                         // 🔄 sync update
-                        fb.updateDoc(
+                        await fb.updateDoc(
                             fb.doc(db, "markers", m.id),
                             { channels: marker.channels }
                         );
