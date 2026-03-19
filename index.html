@@ -5,7 +5,29 @@
 <title>4 Map Viewer</title>
 
 <link rel="stylesheet" href="style.css">
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyAT8Z4KfXnSCeUat6iAlE0Ao0ZMCl2w1w8",
+    authDomain: "mt2classicworldbosstimer.firebaseapp.com",
+    projectId: "mt2classicworldbosstimer",
+    storageBucket: "mt2classicworldbosstimer.firebasestorage.app",
+    messagingSenderId: "1003501247389",
+    appId: "1:1003501247389:web:3bcf4553f90fa3ec60ed74",
+    measurementId: "G-545KSC6G5Q"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js"></script>
 </head>
 
