@@ -322,7 +322,7 @@ function createViewer(id, image, defaultZoom = 1) {
     return viewer;
 }
 
-function addMarker(viewer, point, mapId){
+async function addMarker(viewer, point, mapId){
 
     const type = getSelectedPinType();
 
@@ -517,7 +517,7 @@ function openMarkerPopup(viewer, point, type, marker){
 
         const saveBtn = editor.querySelector(".saveEdit");
 
-        saveBtn.addEventListener("click", () => {
+        saveBtn.addEventListener("click", async () => {
 
             marker.data.name = nameInput.value;
             marker.data.resist = resistInput.value;
@@ -543,7 +543,7 @@ function openMarkerPopup(viewer, point, type, marker){
 
     });
 
-    deleteBtn.addEventListener("click", () => {
+    deleteBtn.addEventListener("click", async () => {
         viewer.removeOverlay(popup);
         activePopup = null;
         activePopupViewer = null;
