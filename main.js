@@ -1,4 +1,4 @@
-let markers = [];
+let markers = {};
 
 let activePopup = null;
 let activePopupViewer = null;
@@ -20,9 +20,74 @@ document.querySelectorAll("#channelBar button").forEach(btn => {
     });
 });
 
+function startMarkerAnimation(marker){
+
+    if(marker._animating) return; // prevent duplicates
+    marker._animating = true;
+
+    const progress = marker.querySelector(".cooldown-progress");
+
+    const radius = 45;
+    const circumference = 2 * Math.PI * radius;
+
+    function tick(){
+
+        const chData = marker.channels?.[activeChannel];
+
+        if(!chData || !chData.endTime){
+            progress.style.strokeDashoffset = circumference;
+            marker.classList.remove("cooling");
+            marker._animating = false;
+            return;
+        }
+
+        const remaining = chData.endTime - Date.now();
+
+        // ✅ finished
+        if(remaining <= 0){
+
+            if(!chData.notified){
+
+                chData.notified = true;
+
+                if (Notification.permission === "granted") {
+                    new Notification(`${marker.type} ready (CH${activeChannel})`);
+                }
+
+                chData.endTime = null;
+
+                // 🔥 sync stop
+                if(marker._id){
+                    fb.updateDoc(
+                        fb.doc(db, "markers", marker._id),
+                        { channels: marker.channels }
+                    );
+                }
+            }
+
+            progress.style.strokeDashoffset = circumference;
+            marker.classList.remove("cooling");
+            marker._animating = false;
+            return;
+        }
+
+        // ✅ update progress
+        const percent = 1 - (remaining / (marker.cooldown * 1000));
+        const offset = circumference * percent;
+
+        progress.style.strokeDashoffset = circumference - offset;
+        marker.classList.add("cooling");
+
+        requestAnimationFrame(tick);
+    }
+
+    requestAnimationFrame(tick);
+}
+
+/* setInterval
 setInterval(() => {
 
-    markers.forEach(m => {
+    Object.values(markers).forEach(m => {
 
         const markerEl = m._element;
         if(!markerEl) return;
@@ -54,14 +119,23 @@ setInterval(() => {
                 if (Notification.permission === "granted") {
                     new Notification(`${markerEl.type} ready (CH${activeChannel})`);
                 }
+
+                // 🔥 SYNC STOP TO FIREBASE
+                chData.endTime = null;
+                const markerData = Object.values(markers).find(m => m._element === markerEl);
+
+                if(markerData){
+                    fb.updateDoc(
+                        fb.doc(db, "markers", markerData.id),
+                        { channels: markerEl.channels }
+                    );
+                }
             }
 
-            chData.endTime = null;
+            
 
-            // 🔥 IMPORTANT: reset UI here too
             progress.style.strokeDashoffset = circumference;
             markerEl.classList.remove("cooling");
-
         } else {
 
             const percent = 1 - (remaining / (markerEl.cooldown * 1000));
@@ -74,6 +148,9 @@ setInterval(() => {
     });
 
 }, 100);
+*/
+
+
 
 function updateChannelUI(){
 
@@ -92,7 +169,12 @@ function setChannel(ch){
     updateChannelUI();
 
     // force immediate visual refresh
-    markers.forEach(m => {
+    Object.values(markers).forEach(m => {
+
+
+        if(m._element){
+            startMarkerAnimation(m._element);
+        }
 
         const marker = m._element; 
         if(!marker) return;
@@ -228,6 +310,7 @@ function createMarkerElement(type, cooldown = 30){
 
         ch.endTime = Date.now() + marker.cooldown * 1000;
         ch.notified = false;
+        startMarkerAnimation(marker); 
     };
     return marker;
 };
@@ -434,7 +517,7 @@ function openMarkerPopup(viewer, point, type, marker){
 
     
 
-    startBtn.addEventListener("click", () => {
+    startBtn.addEventListener("click", async () => {
 
         const hours = parseInt(inputs[0].value) || 0;
         const minutes = parseInt(inputs[1].value) || 0;
@@ -444,10 +527,18 @@ function openMarkerPopup(viewer, point, type, marker){
         if(seconds <= 0) return;
 
         marker.cooldown = seconds;
-
-        // this now resets any existing cooldown
         marker.startCooldown();
 
+        // 🔥 SYNC TO FIREBASE
+        if(marker._id){
+            await fb.updateDoc(
+                fb.doc(db, "markers", marker._id),
+                {
+                    channels: marker.channels,
+                    cooldown: marker.cooldown
+                }
+            );
+        }
     });
 
     editBtn.addEventListener("click", () => {
@@ -532,7 +623,7 @@ function getSelectedPinType(){
 
 function exportMarkers(){
 
-    const clean = markers.map(m => ({
+    const clean = Object.values(markers).map(m => ({
         map: m.map,
         type: m.type,
         x: m.x,
@@ -558,74 +649,120 @@ function listenMarkers(viewers){
 
     fb.onSnapshot(fb.collection(db, "markers"), snapshot => {
 
-        // clear existing markers
-        markers.forEach(m => {
-            if(m._element){
-                viewer.removeOverlay(m._element);
-            }
-        });
+        snapshot.docChanges().forEach(change => {
 
-        markers = [];
-
-        snapshot.forEach(docSnap => {
-
-            const m = docSnap.data();
-            m.id = docSnap.id;
+            const m = change.doc.data();
+            const id = change.doc.id;
+            m.id = id;
 
             const viewer = viewers[m.map];
 
-            const marker = createMarkerElement(m.type);
+            // ✅ ADDED
+            if(change.type === "added"){
 
-            marker.classList.add("openseadragon-no-pan");
-            marker.style.pointerEvents = "auto";
+                const marker = createMarkerElement(m.type);
 
-            marker.data = m.data || {};
-            marker.channels = m.channels || {
-                1:{},2:{},3:{},4:{}
-            };
+                marker.classList.add("openseadragon-no-pan");
+                marker.style.pointerEvents = "auto";
 
-            viewer.addOverlay({
-                element: marker,
-                location: new OpenSeadragon.Point(m.x, m.y),
-                placement: OpenSeadragon.Placement.CENTER
-            });
+                marker._id = id;
 
-            new OpenSeadragon.MouseTracker({
-                element: marker,
+                marker.data = m.data || {};
+                marker.channels = m.channels || {
+                    1:{},2:{},3:{},4:{}
+                };
 
-                clickHandler: async function(event){
-                    event.preventDefaultAction = true;
-
-                    if(event.originalEvent.button === 0){
-                        marker.cooldown = 7200;
-                        marker.startCooldown();
-
-                        // 🔄 sync update
-                        await fb.updateDoc(
-                            fb.doc(db, "markers", m.id),
-                            { channels: marker.channels }
-                        );
-                    }
-                },
-
-                contextMenuHandler: function(event){
-                    event.preventDefaultAction = true;
-
-                    openMarkerPopup(
-                        viewer,
-                        new OpenSeadragon.Point(m.x,m.y),
-                        m.type,
-                        marker
-                    );
+                // ✅ NOW this works
+                if(marker.channels?.[activeChannel]?.endTime){
+                    startMarkerAnimation(marker);
                 }
 
-            }).setTracking(true);
+                viewer.addOverlay({
+                    element: marker,
+                    location: new OpenSeadragon.Point(m.x, m.y),
+                    placement: OpenSeadragon.Placement.CENTER
+                });
 
-            m._element = marker;
-            marker._data = m;
+                new OpenSeadragon.MouseTracker({
+                    element: marker,
 
-            markers.push(m);
+                    clickHandler: async function(event){
+                        event.preventDefaultAction = true;
+
+                        if(event.originalEvent.button === 0){
+                            marker.cooldown = 7200;
+                            marker.startCooldown();
+
+                            await fb.updateDoc(
+                                fb.doc(db, "markers", id),
+                                { 
+                                    channels: marker.channels,
+                                    cooldown: marker.cooldown 
+                                }
+                            );
+                        }
+                    },
+
+                    contextMenuHandler: function(event){
+                        event.preventDefaultAction = true;
+
+                        openMarkerPopup(
+                            viewer,
+                            new OpenSeadragon.Point(m.x,m.y),
+                            m.type,
+                            marker
+                        );
+                    }
+
+                }).setTracking(true);
+
+                marker._data = m;
+
+                markers[id] = {
+                    ...m,
+                    _element: marker
+                };
+            }
+
+            // ✅ MODIFIED (THIS IS THE IMPORTANT PART)
+            if(change.type === "modified"){
+
+                const existing = markers[id];
+                if(!existing) return;
+
+                // 🔥 update ONLY data, don't recreate element
+                existing.channels = m.channels;
+                existing._element.channels = m.channels;
+                existing._element.cooldown = m.cooldown || existing._element.cooldown;
+                const ch = existing._element.channels?.[activeChannel];
+
+                if(ch?.endTime){
+                    startMarkerAnimation(existing._element);
+                }
+
+                // reset notification so each client can notify
+                Object.values(existing._element.channels).forEach(ch => {
+                    ch.notified = false;
+                });
+            }
+
+            // ✅ REMOVED
+            if(change.type === "removed"){
+
+                const existing = markers[id];
+                if(!existing) return;
+
+                const viewer = viewers[existing.map];
+
+                if(existing._element){
+                    viewer.removeOverlay(existing._element);
+                }
+
+                delete markers[id];
+            }
+
         });
+
     });
 }
 
