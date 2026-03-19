@@ -530,6 +530,12 @@ function openMarkerPopup(viewer, point, type, marker){
                 Faj: ${marker.data.resist || "-"}</div>
                 <div>Hely: ${marker.data.location || "-"}</div>
             `;
+            await fb.updateDoc(
+                fb.doc(db, "markers", marker._data.id),
+                {
+                    data: marker.data
+                }
+            );
 
             editor.remove();
         });
