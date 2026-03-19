@@ -381,8 +381,8 @@ async function addMarker(viewer, point, mapId){
     //markers.push(markerData);
 
     // link ONLY in memory (not saved)
-    marker._data = markerData;
-    markerData._element = marker;
+    //marker._data = markerData;
+    //markerData._element = marker;
 
     // store element separately (NOT in JSON)
     
@@ -658,5 +658,7 @@ const viewers = {
     viewer4: createViewer("viewer4","map4.png",0.45)
 };
 
-listenMarkers(viewers);
+window.addEventListener("firebase-ready", () => {
+    listenMarkers(viewers);
+});
 updateChannelUI();
