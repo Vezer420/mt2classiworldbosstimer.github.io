@@ -325,11 +325,7 @@ function createViewer(id, image, defaultZoom = 1) {
 async function addMarker(viewer, point, mapId){
 
     const type = getSelectedPinType();
-
     const marker = createMarkerElement(type);
-
-    marker.classList.add("openseadragon-no-pan");
-    marker.style.pointerEvents = "auto";
 
     viewer.addOverlay({
         element: marker,
@@ -337,46 +333,21 @@ async function addMarker(viewer, point, mapId){
         placement: OpenSeadragon.Placement.CENTER
     });
 
-    new OpenSeadragon.MouseTracker({
-        element: marker,
+    const markerData = {
+        map: mapId,
+        type: type,
+        x: point.x,
+        y: point.y,
+        data: marker.data,
+        channels: marker.channels
+    };
 
-        clickHandler: function(event){
-
-            event.preventDefaultAction = true;
-            event.stopPropagation = true;
-
-            // LEFT CLICK → cooldown
-            if (event.originalEvent.button === 0) {
-
-                marker.cooldown = 7200; // 2 hours
-                marker.startCooldown();
-            }
-        },
-
-        contextMenuHandler: function(event){
-
-            event.preventDefaultAction = true;
-            event.stopPropagation = true;
-
-            // RIGHT CLICK → popup
-            openMarkerPopup(viewer, point, type, marker);
-        }
-
-    }).setTracking(true);
-
-    marker.classList.add("openseadragon-no-pan");
-
+    // 🔥 SEND TO FIREBASE
     await fb.addDoc(
         fb.collection(db, "markers"),
-        {
-            map: mapId,
-            type: type,
-            x: point.x,
-            y: point.y,
-            data: marker.data,
-            channels: marker.channels
-        }
+        markerData
     );
+}
 
     //markers.push(markerData);
 
