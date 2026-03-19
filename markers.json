@@ -1,0 +1,89 @@
+[
+  {
+    "map": "viewer1",
+    "type": "boss",
+    "x": 0.549819085403582,
+    "y": 0.6821341818114762,
+    "data": {
+      "name": "",
+      "resist": "",
+      "location": ""
+    },
+    "channels": {
+      "1": {
+        "endTime": null,
+        "notified": false
+      },
+      "2": {
+        "endTime": null,
+        "notified": false
+      },
+      "3": {
+        "endTime": null,
+        "notified": false
+      },
+      "4": {
+        "endTime": null,
+        "notified": false
+      }
+    }
+  },
+  {
+    "map": "viewer1",
+    "type": "boss",
+    "x": 0.48509687034277205,
+    "y": 1.1590343308427729,
+    "data": {
+      "name": "",
+      "resist": "",
+      "location": ""
+    },
+    "channels": {
+      "1": {
+        "endTime": null,
+        "notified": false
+      },
+      "2": {
+        "endTime": null,
+        "notified": false
+      },
+      "3": {
+        "endTime": null,
+        "notified": false
+      },
+      "4": {
+        "endTime": null,
+        "notified": false
+      }
+    }
+  },
+  {
+    "map": "viewer1",
+    "type": "boss",
+    "x": 0.7371727153801628,
+    "y": 1.5167097025062015,
+    "data": {
+      "name": "",
+      "resist": "",
+      "location": ""
+    },
+    "channels": {
+      "1": {
+        "endTime": null,
+        "notified": false
+      },
+      "2": {
+        "endTime": null,
+        "notified": false
+      },
+      "3": {
+        "endTime": null,
+        "notified": false
+      },
+      "4": {
+        "endTime": null,
+        "notified": false
+      }
+    }
+  }
+]

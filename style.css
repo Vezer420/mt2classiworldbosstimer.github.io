@@ -1,0 +1,243 @@
+html, body {
+    margin: 0;
+    height: 100%;
+}
+
+header{
+    top: 0;
+    z-index: 1000;
+    color: yellowgreen;
+    font-size: 17px;
+    background: #111;
+    height:50px;
+    display:flex;
+    position: sticky;
+    align-items:center;
+    padding:10px;
+}
+#editToggle{
+    padding:6px 12px;
+}
+.logo{
+    margin-right: 20px;
+    font-size: 18px;
+    color: rgb(156, 156, 156);
+}
+.popup-content{
+    
+}
+.header label{
+    margin-right: 10px;
+    color: aliceblue;
+    padding: 6px 10px;
+    margin-right: 10px;
+    cursor: pointer;
+    position: relative;
+    top: 10px;
+    
+}
+.hbutton {
+    background: rgb(74, 74, 74);
+    color: rgb(156, 156, 156);
+    border: none;
+    position: relative;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 6px 12px;
+    
+}
+.headerrad {
+    margin-top: 10px;
+    color: aliceblue;
+    padding: 6px 10px;
+    margin-right: 10px;
+    cursor: pointer;
+    position: relative;
+    top: 0px;
+}
+.exportbtn {
+    background: rgb(74, 74, 74);
+    color: rgb(156, 156, 156);
+    padding: 6px 12px;
+    cursor: pointer;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+}
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    background: rgb(68, 67, 67);
+    grid-gap:  10px;
+
+    width: 100%;
+    height: 100%;
+}
+
+.viewer {
+    width: 100%;
+    height: 100%;
+    background: black;
+}
+
+.marker{
+    position:relative;
+    background:red;
+    color:white;
+    border:none;
+    border-radius:6px;
+    padding:6px 10px;
+    cursor:pointer;
+    font-size:12px;
+}
+
+.marker svg{
+    position:absolute;
+    top:-8px;
+    left:-8px;
+    width:calc(100% + 16px);
+    height:calc(100% + 16px);
+    pointer-events:none;
+    transform:rotate(-90deg);
+}
+
+.cooldown-bg{
+    fill:none;
+    stroke:rgba(0,0,0,0.3);
+    stroke-width:6;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+.cooldown-progress{
+    fill:none;
+    stroke:#00e5ff;
+    stroke-width:6;
+    stroke-linecap:round;
+}
+.chsw{
+    position:absolute;
+    bottom:10px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:1000;
+}
+
+#channelBar {
+    display: flex;
+    gap: 6px;
+}
+
+#channelBar button {
+    padding: 6px 12px;
+    background: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#channelBar button.active {
+    background: #00c853;
+    font-weight: bold;
+}
+
+.pin-town {
+    background: blue;
+}
+.pin-boss.cooling::before{
+    filter: grayscale(100%);
+}
+
+.pin-boss {
+    background: transparent;
+    padding: 12px;
+    position: relative;
+}
+
+.pin-boss::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url('boss_icon.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 0;
+}
+.pin-boss svg {
+    position: absolute;
+    z-index: 1;
+}
+
+.timer {
+    width: 20px;
+    margin-top: 5px;
+    padding: 4px;
+    font-size: 12px;
+}
+.editBtn {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    font-size: 16px;
+    
+    cursor: pointer;
+    background: transparent;
+    border: none;
+}
+.dataDisplay {
+    margin-top: 13px;
+    color: aliceblue;
+    font-size: 14px;
+}
+.startTimer {
+    margin-top: 5px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+}
+.pin-resource {
+    background: green;
+}
+.deleteBtn{
+    background: transparent;
+    color: rgb(255, 0, 0);
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+}
+.marker-preview{
+    background:rgba(255,0,0,0.4);
+    border:2px dashed red;
+    border-radius:6px;
+    padding:4px 8px;
+    pointer-events:none;
+}
+
+.marker-popup{
+    background:rgb(80, 75, 75);
+    border:1px solid #444;
+    border-radius:6px;
+    padding:8px;
+    min-width:120px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.3);
+    pointer-events: auto;
+}
+
+.marker-popup div{
+    font-weight:bold;
+    color: aliceblue !important;
+    margin-bottom:5px;
+}
+
+

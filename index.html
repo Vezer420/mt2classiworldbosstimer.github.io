@@ -2,41 +2,51 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Interactive Map</title>
+<title>4 Map Viewer</title>
+
+<link rel="stylesheet" href="style.css">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js"></script>
-
-<style>
-html, body {
-  margin:0;
-  height:100%;
-}
-
-#map {
-  width:100%;
-  height:100vh;
-  background:black;
-}
-</style>
-
 </head>
 
+<header>
+    <div class="logo">
+        <h1>Mt2 BOSS <br> Tracker</h1>
+    </div>
+    <div>
+        <button class="hbutton" id="editToggle">Enable Edit Mode</button>
+        <div>
+            <label><input type="radio" name="pinType" class="headerrad" value="Boss" checked> Boss</label>
+            <label><input type="radio" name="pinType" class="headerrad" value="boss"> Boss2</label>
+            <label><input type="radio" name="pinType" class="headerrad" value="resource"> Resource</label>
+        </div>
+    </div>
+    <div>
+        <button class="exportbtn" onclick="exportMarkers()">Export Markers</button>
+    </div>
+    <div id="channelBar" class="chsw">
+    <button data-ch="1">CH1</button>
+    <button data-ch="2">CH2</button>
+    <button data-ch="3">CH3</button>
+    <button data-ch="4">CH4</button>
+</div>
+    
+</header>
 <body>
 
-<div id="map"></div>
+<div class="grid">
 
-<script>
-var viewer = OpenSeadragon({
-    id: "map",
-    prefixUrl: "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/images/",
-    tileSources: {
-        type: 'image',
-        url: 'nefrit.png'
-    },
-    showNavigator: true,
-    zoomPerScroll: 1.2
-});
-</script>
+    <div id="viewer1" class="viewer"></div>
+    <div id="viewer2" class="viewer"></div>
+    <div id="viewer3" class="viewer"></div>
+    <div id="viewer4" class="viewer"></div>
+
+</div>
+
+<script src="main.js"></script>
 
 </body>
+<footer></footer>
+    <p>&copy; 2023 4 Map Viewer. All rights reserved.</p>
+</footer>
 </html>
